@@ -1,1 +1,7 @@
-{"name": "Life Clock", "description": "A countdown of how many seconds left in your life", "uuid": "lifeclock@conor-f.github.com", "shell-version": ["3.26.2"]}
+{
+  "name": "Life Clock",
+  "description": "A countdown of how many seconds left in your life",
+  "uuid": "lifeclock@conor-f.github.com",
+  "shell-version": ["3.26.2"],
+  "settings-schema": "com.github.conor-f.lifeclock"
+}

@@ -1,53 +1,87 @@
-
 const St = imports.gi.St;
 const Main = imports.ui.main;
-const Tweener = imports.ui.tweener;
+const Lang = imports.lang;
+const Mainloop = imports.mainloop;
+const Clutter = imports.gi.Clutter;
+const PanelMenu = imports.ui.panelMenu;
+const ExtensionUtils = imports.misc.extensionUtils;
+const Me = ExtensionUtils.getCurrentExtension();
+const Convenience = Me.imports.convenience;
 
-let text, button;
+const CountdownTimer = new Lang.Class({
+		Name: 'CountdownTimer',
+		Extends: PanelMenu.Button,
+    _timeLeft: 1000,
 
-function _hideHello() {
-    Main.uiGroup.remove_actor(text);
-    text = null;
-}
+		_init: function () {
+			this.parent(0.0, "Life Seconds Countdown", false);
 
-function _showHello() {
-    if (!text) {
-        text = new St.Label({ style_class: 'helloworld-label', text: "Hello, world!" });
-        Main.uiGroup.add_actor(text);
+      // Get schema object:
+      this._schema = Convenience.getSettings();
+
+			this.buttonText = new St.Label({
+				text: _("Loading..."),
+				y_align: Clutter.ActorAlign.CENTER
+			});
+
+			this.actor.add_actor(this.buttonText);
+			this._refresh();
+		},
+
+		_refresh: function () {
+      this._setTimeLeft();
+			this._refreshUI();
+			this._removeTimeout();
+			this._timeout = Mainloop.timeout_add_seconds(1, Lang.bind(this, this._refresh));
+
+			return true;
+		},
+
+		_refreshUI: function() {
+			this.buttonText.set_text(this._timeLeft.toString());
+		},
+
+		_removeTimeout: function () {
+			if (this._timeout) {
+				Mainloop.source_remove(this._timeout);
+				this._timeout = null;
+			}
+		},
+
+		stop: function () {
+			if (this._timeout)
+				Mainloop.source_remove(this._timeout);
+
+			this._timeout = undefined;
+
+			this.menu.removeAll();
+		},
+
+
+    _setTimeLeft: function() {
+      this._endDate = this._schema.get_string('end-date');
+      this._endDateAsEpochSeconds = new Date(this._endDate.toString()) / 1000;
+
+      this._now = Math.floor(new Date() / 1000);
+      global.log(this._endDateAsEpochSeconds.toString());
+      global.log(this._now.toString());
+      this._timeLeft = this._endDateAsEpochSeconds - this._now;
     }
+	}
+);
 
-    text.opacity = 255;
 
-    let monitor = Main.layoutManager.primaryMonitor;
-
-    text.set_position(monitor.x + Math.floor(monitor.width / 2 - text.width / 2),
-                      monitor.y + Math.floor(monitor.height / 2 - text.height / 2));
-
-    Tweener.addTween(text,
-                     { opacity: 0,
-                       time: 2,
-                       transition: 'easeOutQuad',
-                       onComplete: _hideHello });
-}
+let countdownMenu;
 
 function init() {
-    button = new St.Bin({ style_class: 'panel-button',
-                          reactive: true,
-                          can_focus: true,
-                          x_fill: true,
-                          y_fill: false,
-                          track_hover: true });
-    let icon = new St.Icon({ icon_name: 'system-run-symbolic',
-                             style_class: 'system-status-icon' });
-
-    button.set_child(icon);
-    button.connect('button-press-event', _showHello);
 }
 
 function enable() {
-    Main.panel._rightBox.insert_child_at_index(button, 0);
+	countdownMenu = new CountdownTimer;
+	Main.panel.addToStatusArea('countdown', countdownMenu);
 }
 
 function disable() {
-    Main.panel._rightBox.remove_child(button);
+	countdownMenu.stop();
+	countdownMenu.destroy();
 }

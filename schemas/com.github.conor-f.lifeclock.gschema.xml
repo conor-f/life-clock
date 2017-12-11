@@ -1,0 +1,9 @@
+<schemalist gettext-domain="lifeclock">
+  <schema id="com.github.conor-f.lifeclock" path="/com/github/conor-f/lifeclock/">
+    <key name="end-date" type="s">
+      <default>'01-01-2020'</default>
+      <summary>The End Date</summary>
+      <description>PUT IT IN IN DD-MM-YYYY</description>
+    </key>
+  </schema>
+</schemalist>
