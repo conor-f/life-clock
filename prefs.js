@@ -37,8 +37,8 @@ const LifeclockPrefsWidget = new GObject.Class({
 
     let primaryText = _("Enter a rough date for your life expectancy in the form yyyy-mm-dd\n");
 
-      this.add(new Gtk.Label({ label: primaryText,
-        wrap: true, xalign: 0 }));
+    this.add(new Gtk.Label({ label: primaryText,
+      wrap: true, xalign: 0 }));
   }
 });
 
