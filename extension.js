@@ -19,16 +19,17 @@ const CountdownTimer = new Lang.Class({
     // Get schema object:
     this._schema = Convenience.getSettings();
 
-    this.buttonText = new St.Label({
+    this.countdownText = new St.Label({
       text: _("Loading..."),
       y_align: Clutter.ActorAlign.CENTER
     });
 
-    this.actor.add_actor(this.buttonText);
+    this.actor.add_actor(this.countdownText);
     this._refresh();
   },
 
   _setTextColour: function() {
+    // A gradient of hex colour values from white to red.
     let colours = ["FFFFFF",
       "FFE3E0",
       "FFC6C4",
@@ -39,16 +40,18 @@ const CountdownTimer = new Lang.Class({
       "FF3838",
       "FF1C1C",
       "FF0000"]
-    let removeEndZeroesRegex = /[0]*$/;
+
+    // Set the colour of the countdown text by taking the length of the time
+    // left string, replacing the trailing 0s with '', subtracting the lengths
+    // and indexing the colours array to find the appropriate colour.
+    let trailingZeroesRegex = /[0]*$/;
     let initLen = this._timeLeft.toString().length;
-    let postLen = this._timeLeft.toString().replace(removeEndZeroesRegex, '').length;
-    global.log(colours[initLen - postLen]);
-    this.buttonText.style = 'color:#'+colours[initLen - postLen]+';';
+    let postLen = this._timeLeft.toString().replace(trailingZeroesRegex, '').length;
+    this.countdownText.style = 'color:#'+colours[initLen - postLen]+';';
   },
 
   _refresh: function () {
     this._setTimeLeft();
-    this._setTextColour();
     this._refreshUI();
     this._removeTimeout();
     this._timeout = Mainloop.timeout_add_seconds(1, Lang.bind(this, this._refresh));
@@ -57,7 +60,8 @@ const CountdownTimer = new Lang.Class({
   },
 
   _refreshUI: function() {
-    this.buttonText.set_text(this._timeLeft.toString());
+    this._setTextColour();
+    this.countdownText.set_text(this._timeLeft.toString());
   },
 
   _removeTimeout: function () {
@@ -75,7 +79,6 @@ const CountdownTimer = new Lang.Class({
 
     this.menu.removeAll();
   },
-
 
   _setTimeLeft: function() {
     this._endDate = this._schema.get_string('end-date');
